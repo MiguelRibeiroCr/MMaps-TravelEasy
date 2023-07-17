@@ -17,6 +17,7 @@ const App = () => {
   const [markerImageUri, setMarkerImageUri] = useState(null);
   const [markerTitle, setMarkerTitle] = useState('');
   const [markerDescription, setMarkerDescription] = useState('');
+  const [markerDate, setMarkerDate] = useState('');
   const [cameraType, setCameraType] = useState(Camera.Constants.Type['back']);
 
   
@@ -67,6 +68,7 @@ const App = () => {
         imageUri: capturedImage,
         title: '',
         description: '',
+        date:'',
       };
       setMarkers([...markers, newMarker]);
     }
@@ -102,6 +104,7 @@ const App = () => {
         imageUri: photo.uri,
         title: '',
         description: '',
+        date:'',
       };
       setMarkers([...markers, newMarker]);
 
@@ -124,6 +127,7 @@ const App = () => {
     setMarkerImageUri(marker.imageUri);
     setMarkerTitle(marker.title);
     setMarkerDescription(marker.description);
+    setMarkerDate(marker.date)
     setModalVisible(true);
   };
 
@@ -144,6 +148,7 @@ const App = () => {
           ...marker,
           title: markerTitle,
           description: markerDescription,
+          date: markerDate,
         };
       }
       return marker;
@@ -237,6 +242,13 @@ const App = () => {
                 placeholder="Descrição"
                 value={markerDescription}
                 onChangeText={setMarkerDescription}
+                multiline={true}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Data"
+                value={markerDate}
+                onChangeText={setMarkerDate}
                 multiline={true}
               />
               <View style={{flexDirection:'row' , justifyContent:'space-between'}}>
