@@ -6,6 +6,7 @@ import * as Location from 'expo-location';
 import { Camera } from 'expo-camera';
 import * as MediaLibrary from 'expo-media-library';
 import { Keyboard } from 'react-native';
+import { Feather } from '@expo/vector-icons'; 
 
 const App = () => {
   const [markers, setMarkers] = useState([]);
@@ -84,7 +85,7 @@ const App = () => {
   const handleOpenCamera = async () => {
     const { status } = await Camera.requestCameraPermissionsAsync();
     if (status !== 'granted') {
-      console.log('Permissão da câmera não concedida');
+      console.log('Permissão da camera não concedida');
     } else {
       setCameraVisible(true);
     }
@@ -172,6 +173,7 @@ const App = () => {
             latitudeDelta: 0.0922,
             longitudeDelta: 0.0421,
           }}
+          showsUserLocation={true}
         >
           {markers.map((marker) => (
             <Marker
@@ -190,7 +192,7 @@ const App = () => {
       {!isCameraVisible && (
         <TouchableOpacity style={styles.buttonContainer} onPress={handleOpenCamera}>
           <View style={styles.iconContainer}>
-            <Icon name="camera" size={30} color="#FFFFFF" />
+            <Feather name="camera" size={35} color="#FFFFFF" />
           </View>
         </TouchableOpacity>
       )}
@@ -204,7 +206,7 @@ const App = () => {
           onMountError={(error) => console.log('Erro ao montar a câmera:', error)}
         >
           <TouchableOpacity style={styles.captureButton} onPress={handleCaptureImage}>
-            <Icon name="camera" size={30} color="#FFFFFF" />
+            <Icon name="camera" size={50} color="#FFFFFF" />
           </TouchableOpacity>
           <TouchableOpacity style={styles.toggleButton} onPress={toggleCameraType}>
             <Icon name="flip-camera-ios" size={30} color="#FFFFFF" />
@@ -267,7 +269,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 40,
     right: 30,
-    backgroundColor: '#303F9F',
+    backgroundColor: '#009688',
     borderRadius: 40,
     padding: 15,
     elevation: 5,
@@ -280,7 +282,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 30,
     alignSelf: 'center',
-    backgroundColor: '#303F9F',
+    backgroundColor: '#009688',
     borderRadius: 40,
     padding: 15,
     elevation: 5,
@@ -289,7 +291,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 30,
     left: 20,
-    backgroundColor: '#303F9F',
+    backgroundColor: '#009688',
     borderRadius: 20,
     padding: 10,
     elevation: 5,
@@ -298,7 +300,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 30,
     alignSelf: 'flex-end',
-    backgroundColor: '#303F9F',
+    backgroundColor: '#009688',
     borderRadius: 40,
     padding: 15,
     elevation: 5,

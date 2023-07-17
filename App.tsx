@@ -1,8 +1,8 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import HomePage from './src/Home/home';
-import CameraPage from './src/component/TelaComponent';
-import Login from './src/TelaLogin/TelaInicial';
+import CameraPage from './src/components/TelaComponent';
+import Login from './src/TelaLogin/TelaLogin';
 
 
 
