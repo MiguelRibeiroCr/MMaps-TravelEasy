@@ -7,6 +7,7 @@ import { Camera } from 'expo-camera';
 import * as MediaLibrary from 'expo-media-library';
 import { Keyboard } from 'react-native';
 import { Feather } from '@expo/vector-icons'; 
+import moment from 'moment';
 
 const App = () => {
   const [markers, setMarkers] = useState([]);
@@ -68,7 +69,7 @@ const App = () => {
         imageUri: capturedImage,
         title: '',
         description: '',
-        date:'',
+        date: moment().format('YYYY-MM-DD'),
       };
       setMarkers([...markers, newMarker]);
     }
@@ -104,7 +105,8 @@ const App = () => {
         imageUri: photo.uri,
         title: '',
         description: '',
-        date:'',
+        date: moment().format('YYYY-MM-DD')
+        ,
       };
       setMarkers([...markers, newMarker]);
 
