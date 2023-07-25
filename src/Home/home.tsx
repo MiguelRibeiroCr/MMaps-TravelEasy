@@ -8,6 +8,7 @@ import * as MediaLibrary from 'expo-media-library';
 import { Keyboard } from 'react-native';
 import { Feather } from '@expo/vector-icons'; 
 import moment from 'moment';
+import { db } from '../../firebase-config';
 
 const App = () => {
   const [markers, setMarkers] = useState([]);
@@ -43,6 +44,7 @@ const App = () => {
   const cameraRef = useRef(null);
 
   useEffect(() => {
+    getPlaces();
     getLocationPermission();
   }, []);
 
@@ -168,6 +170,15 @@ const App = () => {
         : Camera.Constants.Type['back']
     );
   };
+
+  async function getPlaces() {
+    return onValue(ref(db,'/places'),(snapshot)=>{
+      console.log('Dados do Realtime' ,snapshot);
+      
+    })
+  }
+
+  
 
   return (
     <View style={styles.container}>
@@ -354,3 +365,12 @@ const styles = StyleSheet.create({
 });
 
 export default App;
+
+function onValue(arg0: any, arg1: (snapshot: any) => void) {
+  throw new Error('Function not implemented.');
+}
+
+
+function ref(db: any, arg1: string): any {
+  throw new Error('Function not implemented.');
+}
