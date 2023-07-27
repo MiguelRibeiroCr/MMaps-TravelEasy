@@ -9,9 +9,11 @@ import { Keyboard } from 'react-native';
 import { Feather } from '@expo/vector-icons'; 
 import moment from 'moment';
 import { db } from '../../firebase-config';
+import PlaceEntity from '../entities/place-entity';
+import { onValue, push, ref} from 'firebase/database';
 
 const App = () => {
-  const [markers, setMarkers] = useState([]);
+  const [markers, setMarkers] = useState<PlaceEntity[]>([]);
   const [currentLocation, setCurrentLocation] = useState(null);
   const [isCameraVisible, setCameraVisible] = useState(false);
   const [capturedImage, setCapturedImage] = useState(null);
@@ -22,7 +24,6 @@ const App = () => {
   const [markerDate, setMarkerDate] = useState('');
   const [cameraType, setCameraType] = useState(Camera.Constants.Type['back']);
 
-  
   const handleDeleteConfirmation = () => {
     Alert.alert(
       'Confirmação',
@@ -33,9 +34,6 @@ const App = () => {
       ]
     );
   };
-
-
-  
 
   const dismissKeyboard = () => {
     Keyboard.dismiss();
@@ -67,15 +65,19 @@ const App = () => {
     if (currentLocation && capturedImage) {
       const newMarker = {
         id: markers.length.toString(),
-        coordinate: currentLocation,
-        imageUri: capturedImage,
+        coords:{
+          latitude: currentLocation.latitude,
+          longitude: currentLocation.longitude,
+        },
+        imagePath: capturedImage,
         title: '',
         description: '',
-        date: moment().format('YYYY-MM-DD'),
+        photoDate:Date().toString(),
       };
       setMarkers([...markers, newMarker]);
     }
     setCameraVisible(false);
+    push(ref(db,'places'), handleAddMarker);
   };
 
   const saveToGallery = async (photoUri) => {
@@ -103,13 +105,17 @@ const App = () => {
 
       const newMarker = {
         id: markers.length.toString(),
-        coordinate: currentLocation,
-        imageUri: photo.uri,
+        coords:{
+          latitude: currentLocation.latitude,
+          longitude: currentLocation.longitude,
+        },
+        imagePath: capturedImage,
         title: '',
         description: '',
-        date: moment().format('YYYY-MM-DD')
-        ,
+        photoDate:Date().toString(),
+        
       };
+
       setMarkers([...markers, newMarker]);
 
       setCapturedImage(photo.uri);
@@ -140,19 +146,19 @@ const App = () => {
   };
 
   const handleDeleteMarker = (imageUri) => {
-    const updatedMarkers = markers.filter((marker) => marker.imageUri !== imageUri);
+    const updatedMarkers = markers.filter((marker) => marker.imagePath !== imageUri);
     setMarkers(updatedMarkers);
     setModalVisible(false);
   };
 
   const handleSaveMarker = () => {
     const updatedMarkers = markers.map((marker) => {
-      if (marker.imageUri === markerImageUri) {
+      if (marker.imagePath === markerImageUri) {
         return {
           ...marker,
           title: markerTitle,
           description: markerDescription,
-          date: markerDate,
+          photoDate: markerDate,
         };
       }
       return marker;
@@ -173,12 +179,22 @@ const App = () => {
 
   async function getPlaces() {
     return onValue(ref(db,'/places'),(snapshot)=>{
-      console.log('Dados do Realtime' ,snapshot);
-      
+     try {
+        setMarkers([]);
+        if (snapshot !== undefined){
+          snapshot.forEach((childSnapshot) =>{
+
+            const childkey = childSnapshot.key;
+            let childValue = childSnapshot.val();
+            childValue.id = childkey;
+            setMarkers((places) => [...places, (childValue as PlaceEntity)])
+          });
+        }
+      } catch (e){
+        console.log(e);
+      }      
     })
   }
-
-  
 
   return (
     <View style={styles.container}>
@@ -196,12 +212,16 @@ const App = () => {
           {markers.map((marker) => (
             <Marker
               key={marker.id}
-              coordinate={marker.coordinate}
+              coordinate={marker.coords}
               onPress={() => handleMarkerPress(marker)}
             >
+              <Image style={styles.markerImage} source={{ uri: marker.imagePath}} />
               {renderMarkerCallout(marker)}
             </Marker>
           ))}
+
+      
+
         </MapView>
       ) : (
         <Text style={styles.loadingText}>Carregando mapa...</Text>
@@ -240,9 +260,9 @@ const App = () => {
           <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
               {markerImageUri && (
-                <>
+                
                   <Image source={{ uri: markerImageUri }} style={styles.modalImage} />
-                </>
+                
               )}
               <TextInput
                 style={styles.input}
@@ -365,12 +385,3 @@ const styles = StyleSheet.create({
 });
 
 export default App;
-
-function onValue(arg0: any, arg1: (snapshot: any) => void) {
-  throw new Error('Function not implemented.');
-}
-
-
-function ref(db: any, arg1: string): any {
-  throw new Error('Function not implemented.');
-}
