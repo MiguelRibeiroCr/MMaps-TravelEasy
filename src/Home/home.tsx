@@ -7,10 +7,9 @@ import { Camera } from 'expo-camera';
 import * as MediaLibrary from 'expo-media-library';
 import { Keyboard } from 'react-native';
 import { Feather } from '@expo/vector-icons'; 
-import moment from 'moment';
-import { db } from '../../firebase-config';
 import PlaceEntity from '../entities/place-entity';
-import { onValue, push, ref} from 'firebase/database';
+import { onValue, push, ref, update} from 'firebase/database';
+import { db } from '../../firebase-config';
 
 const App = () => {
   const [markers, setMarkers] = useState<PlaceEntity[]>([]);
@@ -21,8 +20,8 @@ const App = () => {
   const [markerImageUri, setMarkerImageUri] = useState(null);
   const [markerTitle, setMarkerTitle] = useState('');
   const [markerDescription, setMarkerDescription] = useState('');
-  const [markerDate, setMarkerDate] = useState('');
   const [cameraType, setCameraType] = useState(Camera.Constants.Type['back']);
+  const [placeDescription, setPlaceDescription] = useState('');
 
   const handleDeleteConfirmation = () => {
     Alert.alert(
@@ -44,6 +43,7 @@ const App = () => {
   useEffect(() => {
     getPlaces();
     getLocationPermission();
+    updateItem();
   }, []);
 
   const getLocationPermission = async () => {
@@ -65,14 +65,11 @@ const App = () => {
     if (currentLocation && capturedImage) {
       const newMarker = {
         id: markers.length.toString(),
-        coords:{
-          latitude: currentLocation.latitude,
-          longitude: currentLocation.longitude,
-        },
+        coords: {latitude: currentLocation.latitude, longitude: currentLocation.longitude},
         imagePath: capturedImage,
         title: '',
         description: '',
-        photoDate:Date().toString(),
+        photoDate: Date().toString()
       };
       setMarkers([...markers, newMarker]);
     }
@@ -109,7 +106,7 @@ const App = () => {
           latitude: currentLocation.latitude,
           longitude: currentLocation.longitude,
         },
-        imagePath: capturedImage,
+        imagePath:  photo.uri,
         title: '',
         description: '',
         photoDate:Date().toString(),
@@ -124,20 +121,19 @@ const App = () => {
     }
   };
 
-  const renderMarkerCallout = (marker) => (
+  const renderMarkerCallout = (marker:PlaceEntity) => (
     <TouchableOpacity onPress={dismissKeyboard}>
-      <Image source={{ uri: marker.imageUri }} style={styles.markerImage} />
+      <Image source={{ uri: marker.imagePath  }} style={styles.markerImage} />
       <Text style={{ textAlign: 'center', fontWeight: 'bold', fontStyle: 'italic', color: '#303F9F' }}>
         {marker.title}
       </Text>
     </TouchableOpacity>
   );
 
-  const handleMarkerPress = (marker) => {
-    setMarkerImageUri(marker.imageUri);
+  const handleMarkerPress = (marker:PlaceEntity) => {
+    setMarkerImageUri(marker.imagePath);
     setMarkerTitle(marker.title);
     setMarkerDescription(marker.description);
-    setMarkerDate(marker.date)
     setModalVisible(true);
   };
 
@@ -158,7 +154,10 @@ const App = () => {
           ...marker,
           title: markerTitle,
           description: markerDescription,
-          photoDate: markerDate,
+          id: Math.random().toString(), 
+          imagepath: markerImageUri,
+          photoDate: Date().toString(),
+          coords:{latitude:currentLocation.latitude, longitude:currentLocation.longitude}
         };
       }
       return marker;
@@ -176,6 +175,10 @@ const App = () => {
         : Camera.Constants.Type['back']
     );
   };
+
+  const onChange = (event) => {
+    setPlaceDescription(event);
+  }
 
   async function getPlaces() {
     return onValue(ref(db,'/places'),(snapshot)=>{
@@ -195,6 +198,12 @@ const App = () => {
       }      
     })
   }
+  async function updateItem() {
+    currentLocation.description = placeDescription;
+    update(ref(db, '/places/' + currentLocation.id), currentLocation);
+    setShowDialog({ showDialog: false });
+    setPlaceDescription('');
+}
 
   return (
     <View style={styles.container}>
@@ -219,8 +228,6 @@ const App = () => {
               {renderMarkerCallout(marker)}
             </Marker>
           ))}
-
-      
 
         </MapView>
       ) : (
@@ -255,14 +262,14 @@ const App = () => {
         </Camera>
       )}
 
-      <Modal visible={isModalVisible} animationType="slide" transparent={true}>
+<Modal visible={isModalVisible} animationType="slide" transparent={true}>
         <TouchableOpacity activeOpacity={1} style={styles.modalContainer} onPress={dismissKeyboard}>
           <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
               {markerImageUri && (
-                
+                <>
                   <Image source={{ uri: markerImageUri }} style={styles.modalImage} />
-                
+                </>
               )}
               <TextInput
                 style={styles.input}
@@ -275,16 +282,14 @@ const App = () => {
                 placeholder="Descrição"
                 value={markerDescription}
                 onChangeText={setMarkerDescription}
-                multiline={true}
               />
               <TextInput
-                style={styles.input}
-                placeholder="Data"
-                value={markerDate}
-                onChangeText={setMarkerDate}
-                multiline={true}
+              onChangeText={onChange}
+              placeholder='Informe sua experiência aqui'
+              value={placeDescription}
+              style={{flex:4, paddingHorizontal: 8}}
               />
-              <View style={{flexDirection:'row' , justifyContent:'space-between'}}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <Button title="Salvar" onPress={handleSaveMarker} />
                 <Button title="Deletar" onPress={handleDeleteConfirmation} />
               </View>
@@ -385,3 +390,7 @@ const styles = StyleSheet.create({
 });
 
 export default App;
+function setShowDialog(arg0: { showDialog: boolean; }) {
+  throw new Error('Function not implemented.');
+}
+
